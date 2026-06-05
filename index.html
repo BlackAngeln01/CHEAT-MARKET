@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>SWILL Cheat Market</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #0a0c15; color: #fff; font-family: Arial; padding: 20px; }
+        .header { text-align: center; padding: 20px; background: #11151f; border-radius: 20px; margin-bottom: 20px; }
+        .logo { font-size: 32px; color: #4ade80; }
+        .products { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr)); gap: 20px; }
+        .product-card { background: #11151f; border-radius: 16px; padding: 20px; border: 1px solid #2a2e3d; }
+        .price { font-size: 22px; color: #4ade80; margin: 10px 0; }
+        button { background: #2a2e3d; border: none; padding: 10px; border-radius: 10px; color: #fff; cursor: pointer; width: 100%; margin: 5px 0; }
+        .cart { position: fixed; right: 20px; top: 100px; width: 320px; background: #11151f; border-radius: 16px; padding: 20px; }
+        .checkout { background: #f59e0b; font-weight: bold; }
+        .id-info { background: #1a1e2a; padding: 10px; border-radius: 10px; margin: 10px 0; font-size: 12px; }
+        @media (max-width: 900px) { .cart { position: static; width: 100%; margin-top: 20px; } .products { margin-right: 0; } }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">🔫 SWILL CHEAT MARKET</div>
+        <div>NASA | Uki | M416 | NARUTO | LeonTap | DAGOTY | Ovnerk | Nerest PC | CFG</div>
+        <a href="https://t.me/Softn01_bot" target="_blank" style="color:#4ade80;">🤖 НАПИСАТЬ АДМИНУ</a>
+    </div>
+    
+    <div style="max-width:1300px;margin:auto;display:flex;gap:30px;flex-wrap:wrap">
+        <div class="products" id="products"></div>
+        <div class="cart">
+            <h3>🛒 КОРЗИНА</h3>
+            <div id="cartItems">Пуста</div>
+            <div id="total">Итого: 0 ₽</div>
+            <button class="checkout" id="checkoutBtn">💸 ОФОРМИТЬ</button>
+            <div class="id-info">
+                ⚠️ <strong>ВАЖНО!</strong> Чтобы получить читы, нужно указать ваш Telegram ID (число).<br>
+                📌 <strong>Как узнать ID:</strong> напишите <strong>@userinfobot</strong> → он пришлёт ваш ID.<br>
+                ✅ После заказа напишите боту <strong>@Softn01_bot</strong> любое сообщение.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const products = [
+            {id:1,name:"NASA PUBG",game:"pubg",type:"антибан",d1:150,d7:200,d30:300},
+            {id:2,name:"Uki PUBG",game:"pubg",type:"антибан",d1:150,d7:200,d30:300},
+            {id:3,name:"M416 PUBG",game:"pubg",type:"антибан",d1:150,d7:200,d30:300},
+            {id:4,name:"NARUTO PUBG",game:"pubg",type:"антибан",d1:150,d7:200,d30:300},
+            {id:5,name:"NASA PUBG",game:"pubg",type:"без антибана",d1:100,d7:150,d30:250},
+            {id:6,name:"Uki PUBG",game:"pubg",type:"без антибана",d1:100,d7:150,d30:250},
+            {id:7,name:"M416 PUBG",game:"pubg",type:"без антибана",d1:100,d7:150,d30:250},
+            {id:8,name:"NARUTO PUBG",game:"pubg",type:"без антибана",d1:100,d7:150,d30:250},
+            {id:9,name:"LeonTap Standoff",game:"standoff",type:"антибан",d1:150,d7:250,d30:400},
+            {id:10,name:"DAGOTY Standoff",game:"standoff",type:"антибан",d1:150,d7:250,d30:400},
+            {id:11,name:"Ovnerk Standoff",game:"standoff",type:"антибан",d1:150,d7:250,d30:400},
+            {id:12,name:"LeonTap Standoff",game:"standoff",type:"без антибана",d1:100,d7:200,d30:350},
+            {id:13,name:"DAGOTY Standoff",game:"standoff",type:"без антибана",d1:100,d7:200,d30:350},
+            {id:14,name:"Ovnerk Standoff",game:"standoff",type:"без антибана",d1:100,d7:200,d30:350},
+            {id:15,name:"Nerest PC",game:"standoff",type:"эмулятор",d1:150,d7:250,d30:400},
+            {id:16,name:"КФГ PUBG",game:"cfg",type:"WH+AIM+NO RECOIL",cfg:100}
+        ];
+        
+        let cart = [];
+        
+        function renderProducts() {
+            document.getElementById('products').innerHTML = products.map(p => {
+                if(p.cfg) return `<div class="product-card"><h3>⚙️ ${p.name}</h3><div>${p.type}</div><div class="price">${p.cfg} ₽</div><button onclick="addToCart(${p.id},'cfg',${p.cfg},'${p.name} (навсегда)')">КУПИТЬ</button></div>`;
+                return `<div class="product-card"><h3>🎮 ${p.name}</h3><div>${p.type}</div><select id="dur_${p.id}"><option value="d1">1 день — ${p.d1} ₽</option><option value="d7">7 дней — ${p.d7} ₽</option><option value="d30">30 дней — ${p.d30} ₽</option></select><button onclick="addToCartWithDuration(${p.id})">В КОРЗИНУ</button></div>`;
+            }).join('');
+        }
+        
+        function addToCartWithDuration(id) {
+            const p = products.find(x=>x.id===id);
+            const d = document.getElementById(`dur_${id}`).value;
+            let price,txt;
+            if(d==='d1'){price=p.d1;txt='1 день'}
+            else if(d==='d7'){price=p.d7;txt='7 дней'}
+            else{price=p.d30;txt='30 дней'}
+            cart.push({name:`${p.name} (${txt})`,price});
+            updateCart();
+        }
+        
+        function addToCart(id,type,price,name){cart.push({name,price});updateCart();}
+        
+        function updateCart() {
+            const container = document.getElementById('cartItems');
+            let total = 0;
+            if(cart.length===0){container.innerHTML='Пуста';document.getElementById('total').innerHTML='Итого: 0 ₽';return;}
+            container.innerHTML = cart.map((item,i)=>`<div>${item.name} — ${item.price}₽ <button onclick="removeFromCart(${i})">❌</button></div>`).join('');
+            total = cart.reduce((s,i)=>s+i.price,0);
+            document.getElementById('total').innerHTML=`Итого: ${total} ₽`;
+        }
+        
+        function removeFromCart(i){cart.splice(i,1);updateCart();}
+        
+        document.getElementById('checkoutBtn').onclick = () => {
+            if(cart.length===0){alert('Корзина пуста');return;}
+            const name = prompt('Ваше имя:') || 'Аноним';
+            const tgId = prompt('📌 Ваш Telegram ID (ЧИСЛО)!\n\nКАК УЗНАТЬ: напишите @userinfobot → он пришлёт ваш ID\n\nВведите ID:');
+            if(!tgId || isNaN(parseInt(tgId))){alert('❌ Нужно ввести ЧИСЛОВОЙ Telegram ID!\n\nУзнайте его у бота @userinfobot');return;}
+            const total = cart.reduce((s,i)=>s+i.price,0);
+            const code = Math.floor(100000+Math.random()*900000);
+            const orders = JSON.parse(localStorage.getItem('swill_orders')||'[]');
+            orders.unshift({
+                id:Date.now(),
+                code:code,
+                customer_name:name,
+                customer_telegram:`@${tgId}`,
+                user_telegram_raw:tgId,
+                items:cart,
+                total:total,
+                status:'pending',
+                created_at:new Date().toISOString()
+            });
+            localStorage.setItem('swill_orders',JSON.stringify(orders));
+            alert(`✅ ЗАКАЗ #${code} СОЗДАН!\n💰 Сумма: ${total} ₽\n\n📌 ДАЛЬШЕ:\n1. Напишите боту @Softn01_bot любое сообщение\n2. Отправьте туда код ${code} и скрин оплаты\n3. Админ проверит и выдаст читы!`);
+            cart = [];updateCart();
+        };
+        
+        renderProducts();
+    </script>
+</body>
+</html>
